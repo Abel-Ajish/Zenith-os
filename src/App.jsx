@@ -299,6 +299,13 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
     const [activeTab, setActiveTab] = useState('personalization');
     const [genPrompt, setGenPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [apiKeyMissing, setApiKeyMissing] = useState(false);
+
+    useEffect(() => {
+        if (!apiKey) {
+            setApiKeyMissing(true);
+        }
+    }, []);
 
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
@@ -334,10 +341,16 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
                         <h2 className="text-xl font-black">Personalization</h2>
                         <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-4">
                             <h3 className="text-[10px] font-black uppercase text-blue-400">Generate Wallpaper</h3>
-                            <div className="flex gap-2">
-                                <input value={genPrompt} onChange={(e) => setGenPrompt(e.target.value)} placeholder="e.g. Cyberpunk city" className="bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-xs flex-1 outline-none focus:border-blue-500/50 transition-colors" />
-                                <button onClick={handleGenerate} disabled={isGenerating} className="bg-blue-600 px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-500 active:scale-95 transition-all">{isGenerating ? '...' : 'Create'}</button>
-                            </div>
+                            {apiKeyMissing ? (
+                                <div className="text-xs text-amber-400 bg-amber-900/50 border border-amber-500/50 p-4 rounded-lg">
+                                    <strong>API Key Missing!</strong> Please add your Gemini API key in <code>src/App.jsx</code> to enable this feature.
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input value={genPrompt} onChange={(e) => setGenPrompt(e.target.value)} placeholder="e.g. Cyberpunk city" className="bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-xs flex-1 outline-none focus:border-blue-500/50 transition-colors" />
+                                    <button onClick={handleGenerate} disabled={isGenerating} className="bg-blue-600 px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-500 active:scale-95 transition-all">{isGenerating ? '...' : 'Create'}</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -419,11 +432,12 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
     }, [isDragging, dragOffset]);
 
     const getLayoutStyle = () => {
-        if (app.maximized) return { top: 0, left: 0, width: '100%', height: 'calc(100% - 72px)', borderRadius: 0 };
-        if (app.snapped === 'left') return { top: 0, left: 0, width: '50%', height: 'calc(100% - 72px)', borderRadius: 0 };
-        if (app.snapped === 'right') return { top: 0, left: '50%', width: '50%', height: 'calc(100% - 72px)', borderRadius: 0 };
+        const topOffset = 32; // Height of the menu bar
+        if (app.maximized) return { top: topOffset, left: 0, width: '100%', height: `calc(100% - 72px - ${topOffset}px)`, borderRadius: 0 };
+        if (app.snapped === 'left') return { top: topOffset, left: 0, width: '50%', height: `calc(100% - 72px - ${topOffset}px)`, borderRadius: 0 };
+        if (app.snapped === 'right') return { top: topOffset, left: '50%', width: '50%', height: `calc(100% - 72px - ${topOffset}px)`, borderRadius: 0 };
         return { 
-            top: position.y, 
+            top: position.y + topOffset,
             left: position.x, 
             width: size.w * scale, 
             height: size.h * scale 
@@ -436,18 +450,20 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
             style={{...getLayoutStyle(), transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)'}}
             onMouseDown={onFocus}
         >
-            <div className="h-10 bg-white/5 flex items-center justify-between px-4 cursor-default border-b border-white/5 active:bg-white/10 transition-colors" onMouseDown={handleMouseDown}>
-                <div className="flex items-center gap-2 text-[9px] text-white/90 font-black uppercase">
-                    {app.icon} <span>{app.title}</span>
+            <div className="h-10 bg-white/5 flex items-center justify-center relative px-4 cursor-default border-b border-white/5 group" onMouseDown={handleMouseDown}>
+                <div className="absolute left-4 flex items-center gap-2">
+                    <button onClick={onClose} className="w-3.5 h-3.5 bg-[#ff5f57] rounded-full flex items-center justify-center group/btn">
+                        <X size={8} className="text-black/60 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                    </button>
+                    <button onClick={onMinimize} className="w-3.5 h-3.5 bg-[#ffbd2e] rounded-full flex items-center justify-center group/btn">
+                        <Minus size={8} className="text-black/60 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                    </button>
+                    <button onClick={onToggleMaximize} className="w-3.5 h-3.5 bg-[#27c93f] rounded-full flex items-center justify-center group/btn">
+                        <Maximize2 size={8} className="text-black/60 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                    </button>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={onMinimize} className="p-1 hover:bg-white/5 rounded-full transition-colors"><Minus size={12} /></button>
-                    <div className="flex bg-white/5 rounded-lg overflow-hidden border border-white/10 mx-1">
-                        <button onClick={() => onSnap('left')} className="p-1 hover:bg-blue-600 transition-colors"><Layout size={10} className="rotate-90" /></button>
-                        <button onClick={onToggleMaximize} className="p-1 hover:bg-blue-600 transition-colors"><Square size={8} /></button>
-                        <button onClick={() => onSnap('right')} className="p-1 hover:bg-blue-600 transition-colors"><Layout size={10} className="-rotate-90" /></button>
-                    </div>
-                    <button onClick={onClose} className="p-1 hover:bg-red-500 rounded-full transition-colors"><X size={12} /></button>
+                <div className="flex items-center gap-2 text-[10px] text-white/60 font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {React.createElement(app.icon, { size: 14, className: app.color })} <span>{app.title}</span>
                 </div>
             </div>
             <div className="flex-1 relative overflow-hidden" style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: `${100/scale}%`, height: `${100/scale}%` }}>
@@ -457,22 +473,59 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
     );
 };
 
+const TopMenuBar = ({ activeApp, apps }) => {
+    // A simple placeholder for now
+    const menuItems = activeApp ? `${activeApp.title} File Edit View Help` : 'System Shell';
+
+    return (
+        <div className="absolute top-0 left-0 right-0 h-8 bg-black/20 backdrop-blur-xl z-[7000] flex items-center justify-between px-4 text-white text-xs font-bold">
+            <div className="flex items-center gap-4">
+                <div className="font-black text-sm">ZENITH</div>
+                <div>{menuItems}</div>
+            </div>
+            <div className="flex items-center gap-3">
+                <Wifi size={16} />
+                <Volume2 size={16} />
+                <Battery size={16} />
+            </div>
+        </div>
+    );
+};
+
+const DockItem = ({ children, mouseX, onClick }) => {
+    const ref = useRef(null);
+    const distance = mouseX !== null ? Math.abs(ref.current.getBoundingClientRect().x - mouseX) : Infinity;
+    const scale = Math.max(1, 2 - distance / 100);
+
+    return (
+        <button
+            ref={ref}
+            onClick={onClick}
+            className="w-14 h-14 flex items-center justify-center rounded-xl cursor-pointer relative transition-all duration-100 active:scale-90"
+            style={{ transform: `scale(${scale})`, transition: 'transform 0.1s' }}
+        >
+            {children}
+        </button>
+    );
+};
+
 export default function App() {
-    const [wallpaper, setWallpaper] = useState("https://images.unsplash.com/photo-1633167606207-d840b5070fc2?q=100");
+    const [wallpaper, setWallpaper] = useState("https://images.unsplash.com/photo-1633167606207-d840b_5070fc2?q=100");
     const [booting, setBooting] = useState(true);
     const [windows, setWindows] = useState([]);
     const [activeWindowId, setActiveWindowId] = useState(null);
     const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
     const [scale, setScale] = useState(1);
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [mouseX, setMouseX] = useState(null);
 
     const APPS = useMemo(() => [
-        { id: 'browser', title: 'Nexus Browser', icon: <Globe size={18} className="text-blue-500"/>, component: <NexusBrowser />, defaultSize: {w: 900, h: 600} },
-        { id: 'settings', title: 'Settings', icon: <SettingsIcon size={18}/>, component: <SettingsApp setWallpaper={setWallpaper} scale={scale} setScale={setScale} isFullScreen={isFullScreen} setIsFullScreen={setIsFullScreen} />, defaultSize: {w: 600, h: 500} },
-        { id: 'terminal', title: 'Terminal', icon: <TermIcon size={18} className="text-green-500"/>, component: <ContinuumShell />, defaultSize: {w: 600, h: 400} },
-        { id: 'physics', title: 'Physics Lab', icon: <Flame size={18} className="text-blue-400"/>, component: <ProjectileLab />, defaultSize: {w: 450, h: 500} },
-        { id: 'maths', title: 'Maths Lab', icon: <FunctionSquare size={18} className="text-purple-400"/>, component: <div className="p-8 text-white">Maths Lab Visualization...</div>, defaultSize: {w: 400, h: 450} },
-        { id: 'notes', title: 'Notes', icon: <Notebook size={18} className="text-yellow-400"/>, component: <textarea className="w-full h-full bg-transparent p-4 text-white outline-none" placeholder="Notes..."></textarea>, defaultSize: {w: 400, h: 500} },
+        { id: 'browser', title: 'Nexus Browser', icon: Globe, color: "text-blue-500", component: <NexusBrowser />, defaultSize: {w: 900, h: 600} },
+        { id: 'settings', title: 'Settings', icon: SettingsIcon, color: "text-gray-300", component: <SettingsApp setWallpaper={setWallpaper} scale={scale} setScale={setScale} isFullScreen={isFullScreen} setIsFullScreen={setIsFullScreen} />, defaultSize: {w: 600, h: 500} },
+        { id: 'terminal', title: 'Terminal', icon: TermIcon, color: "text-green-500", component: <ContinuumShell />, defaultSize: {w: 600, h: 400} },
+        { id: 'physics', title: 'Physics Lab', icon: Flame, color: "text-red-400", component: <ProjectileLab />, defaultSize: {w: 450, h: 500} },
+        { id: 'maths', title: 'Maths Lab', icon: FunctionSquare, color: "text-purple-400", component: <div className="p-8 text-white">Maths Lab Visualization...</div>, defaultSize: {w: 400, h: 450} },
+        { id: 'notes', title: 'Notes', icon: Notebook, color: "text-yellow-400", component: <textarea className="w-full h-full bg-transparent p-4 text-white outline-none" placeholder="Notes..."></textarea>, defaultSize: {w: 400, h: 500} },
     ], [scale, isFullScreen]);
 
     const launchApp = (id) => {
@@ -484,7 +537,7 @@ export default function App() {
             setActiveWindowId(existing.id);
             return;
         }
-        const newWin = { id: Date.now(), appId: id, ...appDef, minimized: false, maximized: false, snapped: null, defaultPos: { x: 100 + (windows.length * 30), y: 50 + (windows.length * 30) } };
+        const newWin = { id: Date.now(), appId: id, ...appDef, minimized: false, maximized: false, snapped: null, defaultPos: { x: 100 + (windows.length * 30), y: 20 + (windows.length * 30) } };
         setWindows([...windows, newWin]);
         setActiveWindowId(newWin.id);
     };
@@ -498,12 +551,15 @@ export default function App() {
                 <BootSequence onComplete={() => setBooting(false)} />
             ) : (
                 <div className="w-full h-full bg-cover bg-center transition-all duration-1000 ease-out" style={{ backgroundImage: `url(${wallpaper})` }}>
+                    <TopMenuBar activeApp={windows.find(w => w.id === activeWindowId)} apps={APPS} />
                     
                     {/* DESKTOP ICONS */}
-                    <div className="absolute inset-0 p-12 grid grid-flow-col grid-rows-6 gap-8 w-fit" style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+                    <div className="absolute top-8 inset-0 p-12 grid grid-flow-col grid-rows-6 gap-8 w-fit" style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
                         {APPS.slice(0, 5).map(app => (
                             <div key={app.id} onDoubleClick={() => launchApp(app.id)} className="w-20 h-20 flex flex-col items-center gap-2 group cursor-pointer active:scale-90 transition-transform duration-150">
-                                <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-white/10 transition-all border border-white/5 backdrop-blur-md group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]">{app.icon}</div>
+                                <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-white/10 transition-all border border-white/5 backdrop-blur-md group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+                                    {React.createElement(app.icon, { size: 28, className: app.color })}
+                                </div>
                                 <span className="text-[8px] text-white/70 font-black uppercase tracking-widest text-center group-hover:text-white transition-colors">{app.title}</span>
                             </div>
                         ))}
@@ -521,36 +577,45 @@ export default function App() {
                         />
                     ))}
 
-                    {/* START MENU */}
+                    {/* LAUNCHPAD */}
                     {isStartMenuOpen && (
-                        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[500px] h-[400px] bg-black/80 backdrop-blur-3xl border border-white/10 rounded-[2rem] z-[6000] p-8 animate-in slide-in-from-bottom-8 fade-in zoom-in-95 duration-300 shadow-2xl overflow-hidden" style={{ transform: `translateX(-50%) scale(${scale})`, transformOrigin: 'bottom center' }}>
-                            <div className="grid grid-cols-4 gap-6 overflow-y-auto no-scrollbar pb-6">
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl z-[6000] p-24 animate-in fade-in duration-300" onClick={() => setIsStartMenuOpen(false)}>
+                            <div className="grid grid-cols-8 gap-12">
                                 {APPS.map(app => (
                                     <button key={app.id} onClick={() => launchApp(app.id)} className="flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-white/5 transition-all group active:scale-90 duration-150">
-                                        <div className="group-hover:scale-110 transition-transform duration-200">{app.icon}</div>
-                                        <span className="text-[9px] font-bold text-white/60 uppercase group-hover:text-white">{app.title}</span>
+                                        <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-white/10 transition-all border border-white/5 backdrop-blur-md group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] group-hover:scale-110 duration-200">
+                                            {React.createElement(app.icon, { size: 32, className: app.color })}
+                                        </div>
+                                        <span className="text-[10px] font-bold text-white/80 uppercase group-hover:text-white">{app.title}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* TASKBAR */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center w-full px-4 pointer-events-none z-[5000]">
-                        <div 
-                          className="h-14 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-2 gap-1 pointer-events-auto shadow-2xl transition-all duration-300"
-                          style={{ transform: `scale(${scale})`, transformOrigin: 'bottom center' }}
+                    {/* DOCK */}
+                    <div
+                        className="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center w-full px-4 pointer-events-none z-[5000]"
+                        style={{ transform: `scale(${scale})`, transformOrigin: 'bottom center' }}
+                    >
+                        <div
+                            onMouseMove={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setMouseX(e.clientX - rect.left);
+                            }}
+                            onMouseLeave={() => setMouseX(null)}
+                            className="h-20 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl flex items-end px-3 pb-2 gap-2 pointer-events-auto shadow-2xl transition-all duration-300"
                         >
-                            <button onClick={() => setIsStartMenuOpen(!isStartMenuOpen)} className={`p-2.5 rounded-xl transition-all duration-200 active:scale-90 ${isStartMenuOpen ? 'bg-blue-500/30' : 'hover:bg-blue-500/20'}`}><Grid3X3 size={22} className="text-blue-500" /></button>
-                            <div className="w-[1px] h-6 bg-white/10 mx-1" />
-                            {windows.map(win => (
-                              <div key={win.id} onClick={() => { setWindows(windows.map(w => w.id === win.id ? { ...w, minimized: false } : w)); setActiveWindowId(win.id); }} className={`p-2.5 rounded-xl cursor-pointer relative transition-all duration-200 active:scale-90 ${activeWindowId === win.id ? 'bg-white/10' : 'hover:bg-white/5'}`}>
-                                  {win.icon}
-                                  <div className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full transition-all duration-300 ${win.minimized ? 'bg-white/30' : 'bg-blue-500'}`} />
-                              </div>
+                            <DockItem mouseX={mouseX} onClick={() => setIsStartMenuOpen(!isStartMenuOpen)}>
+                                <Grid3X3 size={28} className="text-blue-500" />
+                            </DockItem>
+                            <div className="w-[1px] h-10 self-center bg-white/10 mx-1" />
+                            {APPS.map(app => (
+                                <DockItem key={app.id} mouseX={mouseX} onClick={() => launchApp(app.id)}>
+                                    {React.createElement(app.icon, { size: 28, className: app.color })}
+                                    {windows.some(w => w.appId === app.id) && <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-white/80" />}
+                                </DockItem>
                             ))}
-                            <div className="w-[1px] h-6 bg-white/10 mx-1" />
-                            <div className="flex items-center gap-2 px-2 text-white/40"><Wifi size={14} /><Volume2 size={14} /><Battery size={14} /></div>
                         </div>
                     </div>
                 </div>
