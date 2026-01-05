@@ -308,15 +308,7 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
     }, []);
 
     const toggleFullScreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                console.warn(`Native full-screen disallowed: ${err.message}. Using pseudo-fullscreen instead.`);
-            });
-            setIsFullScreen(true);
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-            setIsFullScreen(false);
-        }
+        setIsFullScreen(prev => !prev);
     };
 
     const handleGenerate = async () => {
@@ -415,19 +407,32 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
         if (isMaximized || app.snapped) return;
         onFocus();
         setIsDragging(true);
-        setDragOffset({ x: e.clientX - position.x, y: e.clientY - position.y });
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        setDragOffset({ x: clientX - position.x, y: clientY - position.y });
     };
 
     useEffect(() => {
-        const handleMouseMove = (e) => { if (isDragging) setPosition({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y }); };
+        const handleMouseMove = (e) => {
+            if (isDragging) {
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                setPosition({ x: clientX - dragOffset.x, y: clientY - dragOffset.y });
+            }
+        };
         const handleMouseUp = () => setIsDragging(false);
+
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchmove', handleMouseMove);
+            window.addEventListener('touchend', handleMouseUp);
         }
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('touchmove', handleMouseMove);
+            window.removeEventListener('touchend', handleMouseUp);
         };
     }, [isDragging, dragOffset]);
 
@@ -450,7 +455,11 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
             style={{...getLayoutStyle(), transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)'}}
             onMouseDown={onFocus}
         >
-            <div className="h-10 bg-white/5 flex items-center justify-center relative px-4 cursor-default border-b border-white/5 group" onMouseDown={handleMouseDown}>
+            <div
+                className="h-10 bg-white/5 flex items-center justify-center relative px-4 cursor-default border-b border-white/5 group"
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleMouseDown}
+            >
                 <div className="absolute left-4 flex items-center gap-2">
                     <button onClick={onClose} className="w-3.5 h-3.5 bg-[#ff5f57] rounded-full flex items-center justify-center group/btn">
                         <X size={8} className="text-black/60 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
@@ -544,7 +553,7 @@ export default function App() {
 
     return (
         <div 
-            className={`relative overflow-hidden bg-black font-sans transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[10000]' : 'w-full h-screen'}`} 
+            className={`font-sans transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[10000] bg-black' : 'relative w-full h-screen overflow-hidden bg-black'}`}
             style={{ fontSize: `${16 * scale}px` }}
         >
             {booting ? (
@@ -554,7 +563,7 @@ export default function App() {
                     <TopMenuBar activeApp={windows.find(w => w.id === activeWindowId)} apps={APPS} />
                     
                     {/* DESKTOP ICONS */}
-                    <div className="absolute top-8 inset-0 p-12 grid grid-flow-col grid-rows-6 gap-8 w-fit" style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+                    <div className="absolute top-8 inset-0 p-12 hidden md:grid grid-flow-col grid-rows-6 gap-8 w-fit" style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
                         {APPS.slice(0, 5).map(app => (
                             <div key={app.id} onDoubleClick={() => launchApp(app.id)} className="w-20 h-20 flex flex-col items-center gap-2 group cursor-pointer active:scale-90 transition-transform duration-150">
                                 <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-white/10 transition-all border border-white/5 backdrop-blur-md group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
@@ -579,8 +588,8 @@ export default function App() {
 
                     {/* LAUNCHPAD */}
                     {isStartMenuOpen && (
-                        <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl z-[6000] p-24 animate-in fade-in duration-300" onClick={() => setIsStartMenuOpen(false)}>
-                            <div className="grid grid-cols-8 gap-12">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl z-[6000] p-8 md:p-24 animate-in fade-in duration-300" onClick={() => setIsStartMenuOpen(false)}>
+                        <div className="grid grid-cols-2 md:grid-cols-8 gap-8 md:gap-12">
                                 {APPS.map(app => (
                                     <button key={app.id} onClick={() => launchApp(app.id)} className="flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-white/5 transition-all group active:scale-90 duration-150">
                                         <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-white/10 transition-all border border-white/5 backdrop-blur-md group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] group-hover:scale-110 duration-200">
