@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  X, Minus, Square, Globe, Terminal as TermIcon, Microscope, Beaker, Zap,
-  Activity, Cpu, Thermometer, Grid3X3, Notebook, Flame, Sparkles,
-  FunctionSquare, Boxes, Compass, Dna, Play, Pause, RefreshCw,
-  ChevronRight, ArrowRight, Wind, Layers, Settings as SettingsIcon, Power,
-  Search, Volume2, Wifi, Battery, Palette, Monitor, Info, Trash2, Send, Loader2,
-  ShieldCheck, Database, Network, Atom, Calculator, ChevronLeft, Home, ExternalLink,
-  AlertCircle, Layout, Maximize2
+import {
+    X, Minus, Square, Globe, Terminal as TermIcon, Microscope, Beaker, Zap,
+    Activity, Cpu, Thermometer, Grid3X3, Notebook, Flame, Sparkles,
+    FunctionSquare, Boxes, Compass, Dna, Play, Pause, RefreshCw,
+    ChevronRight, ArrowRight, Wind, Layers, Settings as SettingsIcon, Power,
+    Search, Volume2, Wifi, Battery, Palette, Monitor, Info, Trash2, Send, Loader2,
+    ShieldCheck, Database, Network, Atom, Calculator, ChevronLeft, Home, ExternalLink,
+    AlertCircle, Layout, Maximize2
 } from 'lucide-react';
 
 /* --- GEMINI API CONFIG --- */
-const apiKey = ""; 
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 const fetchGemini = async (prompt) => {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
@@ -86,7 +86,7 @@ const BootSequence = ({ onComplete }) => {
             if (audioContextRef.current?.state === 'suspended') {
                 await audioContextRef.current.resume();
             }
-            
+
             if (audioRef.current) {
                 audioRef.current.muted = false;
                 audioRef.current.volume = 0.8;
@@ -115,7 +115,7 @@ const BootSequence = ({ onComplete }) => {
                 setProgress((logIndex / bootLogs.length) * 100);
             } else {
                 clearInterval(interval);
-                setTimeout(onComplete, 1200); 
+                setTimeout(onComplete, 1200);
             }
         }, 350);
         return () => clearInterval(interval);
@@ -130,7 +130,7 @@ const BootSequence = ({ onComplete }) => {
 
             {!hasInteracted ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer" onClick={startBoot}>
-                    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ 
+                    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
                         backgroundImage: 'linear-gradient(#1e3a8a 1px, transparent 1px), linear-gradient(90deg, #1e3a8a 1px, transparent 1px)',
                         backgroundSize: '40px 40px'
                     }}></div>
@@ -147,7 +147,7 @@ const BootSequence = ({ onComplete }) => {
                 </div>
             ) : (
                 <>
-                    <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ 
+                    <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
                         backgroundImage: 'linear-gradient(transparent 95%, #3b82f6 95%), linear-gradient(90deg, transparent 95%, #3b82f6 95%)',
                         backgroundSize: '20px 20px'
                     }}></div>
@@ -216,19 +216,19 @@ const NexusBrowser = () => {
                         <AlertCircle size={14} />
                         <span>System Notice: Due to iframe limitations, some websites may not load correctly.</span>
                     </div>
-                    <button onClick={() => setShowNotice(false)} className="hover:bg-white/20 p-1 rounded-full"><X size={12}/></button>
+                    <button onClick={() => setShowNotice(false)} className="hover:bg-white/20 p-1 rounded-full"><X size={12} /></button>
                 </div>
             )}
             <div className="bg-[#222] p-2 flex items-center gap-3 border-b border-white/5">
                 <div className="flex gap-1">
-                    <button onClick={() => historyIdx > 0 && setUrl(history[historyIdx - 1])} className="p-1.5 hover:bg-white/10 rounded-lg disabled:opacity-30"><ChevronLeft size={16}/></button>
-                    <button onClick={() => navigate('https://www.google.com/search?igu=1')} className="p-1.5 hover:bg-white/10 rounded-lg"><Home size={16}/></button>
+                    <button onClick={() => historyIdx > 0 && setUrl(history[historyIdx - 1])} className="p-1.5 hover:bg-white/10 rounded-lg disabled:opacity-30"><ChevronLeft size={16} /></button>
+                    <button onClick={() => navigate('https://www.google.com/search?igu=1')} className="p-1.5 hover:bg-white/10 rounded-lg"><Home size={16} /></button>
                 </div>
                 <div className="flex-1 bg-black/40 border border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2 group focus-within:ring-1 ring-blue-500/50">
                     <Globe size={14} className="text-white/40" />
-                    <input 
-                        className="bg-transparent border-none outline-none text-xs w-full text-white/80" 
-                        value={inputUrl} 
+                    <input
+                        className="bg-transparent border-none outline-none text-xs w-full text-white/80"
+                        value={inputUrl}
                         onChange={(e) => setInputUrl(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && navigate(inputUrl)}
                     />
@@ -248,8 +248,8 @@ const ProjectileLab = () => {
     const g = 9.8;
     const stats = useMemo(() => {
         const rad = (angle * Math.PI) / 180;
-        const H = (velocity**2 * Math.sin(rad)**2) / (2 * g);
-        const R = (velocity**2 * Math.sin(2 * rad)) / g;
+        const H = (velocity ** 2 * Math.sin(rad) ** 2) / (2 * g);
+        const R = (velocity ** 2 * Math.sin(2 * rad)) / g;
         const T = (2 * velocity * Math.sin(rad)) / g;
         return { H: H.toFixed(2), R: R.toFixed(2), T: T.toFixed(2) };
     }, [angle, velocity]);
@@ -258,7 +258,7 @@ const ProjectileLab = () => {
             <h3 className="text-xs font-black uppercase tracking-widest text-blue-400 mb-6">Projectile Simulator</h3>
             <div className="flex-1 relative border-l border-b border-white/10 mb-6">
                 <svg className="w-full h-full" viewBox="0 0 400 200">
-                    <path d={`M 10 190 Q ${10 + (stats.R * 2)} ${190 - (stats.H * 8)} ${10 + (stats.R * 4)} 190`} fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,5"/>
+                    <path d={`M 10 190 Q ${10 + (stats.R * 2)} ${190 - (stats.H * 8)} ${10 + (stats.R * 4)} 190`} fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,5" />
                 </svg>
             </div>
             <div className="space-y-4">
@@ -307,7 +307,7 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
             });
             setIsFullScreen(true);
         } else {
-            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => { });
             setIsFullScreen(false);
         }
     };
@@ -325,8 +325,8 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
     return (
         <div className="h-full bg-[#0a0a0a] flex text-white overflow-hidden">
             <div className="w-48 border-r border-white/5 p-6 flex flex-col gap-4">
-                <button onClick={() => setActiveTab('personalization')} className={`flex items-center gap-3 p-3 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 ${activeTab === 'personalization' ? 'bg-blue-600' : 'hover:bg-white/5 active:scale-95'}`}><Palette size={16}/> Style</button>
-                <button onClick={() => setActiveTab('system')} className={`flex items-center gap-3 p-3 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 ${activeTab === 'system' ? 'bg-blue-600' : 'hover:bg-white/5 active:scale-95'}`}><Monitor size={16}/> System</button>
+                <button onClick={() => setActiveTab('personalization')} className={`flex items-center gap-3 p-3 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 ${activeTab === 'personalization' ? 'bg-blue-600' : 'hover:bg-white/5 active:scale-95'}`}><Palette size={16} /> Style</button>
+                <button onClick={() => setActiveTab('system')} className={`flex items-center gap-3 p-3 rounded-xl text-[10px] font-bold uppercase transition-all duration-200 ${activeTab === 'system' ? 'bg-blue-600' : 'hover:bg-white/5 active:scale-95'}`}><Monitor size={16} /> System</button>
             </div>
             <div className="flex-1 p-8 overflow-y-auto no-scrollbar animate-in fade-in zoom-in-95 duration-200">
                 {activeTab === 'personalization' ? (
@@ -343,14 +343,14 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
                 ) : (
                     <div className="space-y-10">
                         <h2 className="text-xl font-black">System Display</h2>
-                        
+
                         <div className="bg-white/5 p-6 rounded-3xl space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
                                     <h3 className="text-sm font-bold">Pseudo Full Screen</h3>
                                     <p className="text-[10px] text-white/40 uppercase">Maximize viewport usage (Bypasses Permission Policies)</p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={toggleFullScreen}
                                     className={`w-12 h-6 rounded-full relative transition-all duration-300 ${isFullScreen ? 'bg-blue-500' : 'bg-white/10 hover:bg-white/20'}`}
                                 >
@@ -367,12 +367,12 @@ const SettingsApp = ({ setWallpaper, scale, setScale, isFullScreen, setIsFullScr
                                     <span className="text-xs font-mono text-blue-400">{(scale * 100).toFixed(0)}%</span>
                                 </div>
                                 <div className="relative pt-2 pb-6">
-                                    <input 
-                                        type="range" 
-                                        min="0.8" 
-                                        max="1.2" 
-                                        step="0.05" 
-                                        value={scale} 
+                                    <input
+                                        type="range"
+                                        min="0.8"
+                                        max="1.2"
+                                        step="0.05"
+                                        value={scale}
                                         onChange={(e) => setScale(parseFloat(e.target.value))}
                                         className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
                                     />
@@ -422,18 +422,18 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
         if (app.maximized) return { top: 0, left: 0, width: '100%', height: 'calc(100% - 72px)', borderRadius: 0 };
         if (app.snapped === 'left') return { top: 0, left: 0, width: '50%', height: 'calc(100% - 72px)', borderRadius: 0 };
         if (app.snapped === 'right') return { top: 0, left: '50%', width: '50%', height: 'calc(100% - 72px)', borderRadius: 0 };
-        return { 
-            top: position.y, 
-            left: position.x, 
-            width: size.w * scale, 
-            height: size.h * scale 
+        return {
+            top: position.y,
+            left: position.x,
+            width: size.w * scale,
+            height: size.h * scale
         };
     };
 
     return (
-        <div 
+        <div
             className={`absolute bg-[#0a0a0a]/90 backdrop-blur-3xl rounded-[1.5rem] shadow-2xl flex flex-col overflow-hidden border border-white/10 animate-in fade-in zoom-in-95 duration-200 ${isActive ? 'z-50 ring-1 ring-white/20' : 'z-40 opacity-90'}`}
-            style={{...getLayoutStyle(), transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)'}}
+            style={{ ...getLayoutStyle(), transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)' }}
             onMouseDown={onFocus}
         >
             <div className="h-10 bg-white/5 flex items-center justify-between px-4 cursor-default border-b border-white/5 active:bg-white/10 transition-colors" onMouseDown={handleMouseDown}>
@@ -450,7 +450,7 @@ const Window = ({ app, onClose, onMinimize, isActive, onFocus, isMaximized, onTo
                     <button onClick={onClose} className="p-1 hover:bg-red-500 rounded-full transition-colors"><X size={12} /></button>
                 </div>
             </div>
-            <div className="flex-1 relative overflow-hidden" style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: `${100/scale}%`, height: `${100/scale}%` }}>
+            <div className="flex-1 relative overflow-hidden" style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: `${100 / scale}%`, height: `${100 / scale}%` }}>
                 {app.component}
             </div>
         </div>
@@ -467,12 +467,12 @@ export default function App() {
     const [isFullScreen, setIsFullScreen] = useState(false);
 
     const APPS = useMemo(() => [
-        { id: 'browser', title: 'Nexus Browser', icon: <Globe size={18} className="text-blue-500"/>, component: <NexusBrowser />, defaultSize: {w: 900, h: 600} },
-        { id: 'settings', title: 'Settings', icon: <SettingsIcon size={18}/>, component: <SettingsApp setWallpaper={setWallpaper} scale={scale} setScale={setScale} isFullScreen={isFullScreen} setIsFullScreen={setIsFullScreen} />, defaultSize: {w: 600, h: 500} },
-        { id: 'terminal', title: 'Terminal', icon: <TermIcon size={18} className="text-green-500"/>, component: <ContinuumShell />, defaultSize: {w: 600, h: 400} },
-        { id: 'physics', title: 'Physics Lab', icon: <Flame size={18} className="text-blue-400"/>, component: <ProjectileLab />, defaultSize: {w: 450, h: 500} },
-        { id: 'maths', title: 'Maths Lab', icon: <FunctionSquare size={18} className="text-purple-400"/>, component: <div className="p-8 text-white">Maths Lab Visualization...</div>, defaultSize: {w: 400, h: 450} },
-        { id: 'notes', title: 'Notes', icon: <Notebook size={18} className="text-yellow-400"/>, component: <textarea className="w-full h-full bg-transparent p-4 text-white outline-none" placeholder="Notes..."></textarea>, defaultSize: {w: 400, h: 500} },
+        { id: 'browser', title: 'Nexus Browser', icon: <Globe size={18} className="text-blue-500" />, component: <NexusBrowser />, defaultSize: { w: 900, h: 600 } },
+        { id: 'settings', title: 'Settings', icon: <SettingsIcon size={18} />, component: <SettingsApp setWallpaper={setWallpaper} scale={scale} setScale={setScale} isFullScreen={isFullScreen} setIsFullScreen={setIsFullScreen} />, defaultSize: { w: 600, h: 500 } },
+        { id: 'terminal', title: 'Terminal', icon: <TermIcon size={18} className="text-green-500" />, component: <ContinuumShell />, defaultSize: { w: 600, h: 400 } },
+        { id: 'physics', title: 'Physics Lab', icon: <Flame size={18} className="text-blue-400" />, component: <ProjectileLab />, defaultSize: { w: 450, h: 500 } },
+        { id: 'maths', title: 'Maths Lab', icon: <FunctionSquare size={18} className="text-purple-400" />, component: <div className="p-8 text-white">Maths Lab Visualization...</div>, defaultSize: { w: 400, h: 450 } },
+        { id: 'notes', title: 'Notes', icon: <Notebook size={18} className="text-yellow-400" />, component: <textarea className="w-full h-full bg-transparent p-4 text-white outline-none" placeholder="Notes..."></textarea>, defaultSize: { w: 400, h: 500 } },
     ], [scale, isFullScreen]);
 
     const launchApp = (id) => {
@@ -490,15 +490,15 @@ export default function App() {
     };
 
     return (
-        <div 
-            className={`relative overflow-hidden bg-black font-sans transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[10000]' : 'w-full h-screen'}`} 
+        <div
+            className={`relative overflow-hidden bg-black font-sans transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[10000]' : 'w-full h-screen'}`}
             style={{ fontSize: `${16 * scale}px` }}
         >
             {booting ? (
                 <BootSequence onComplete={() => setBooting(false)} />
             ) : (
                 <div className="w-full h-full bg-cover bg-center transition-all duration-1000 ease-out" style={{ backgroundImage: `url(${wallpaper})` }}>
-                    
+
                     {/* DESKTOP ICONS */}
                     <div className="absolute inset-0 p-12 grid grid-flow-col grid-rows-6 gap-8 w-fit" style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
                         {APPS.slice(0, 5).map(app => (
@@ -537,17 +537,17 @@ export default function App() {
 
                     {/* TASKBAR */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex justify-center w-full px-4 pointer-events-none z-[5000]">
-                        <div 
-                          className="h-14 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-2 gap-1 pointer-events-auto shadow-2xl transition-all duration-300"
-                          style={{ transform: `scale(${scale})`, transformOrigin: 'bottom center' }}
+                        <div
+                            className="h-14 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-2 gap-1 pointer-events-auto shadow-2xl transition-all duration-300"
+                            style={{ transform: `scale(${scale})`, transformOrigin: 'bottom center' }}
                         >
                             <button onClick={() => setIsStartMenuOpen(!isStartMenuOpen)} className={`p-2.5 rounded-xl transition-all duration-200 active:scale-90 ${isStartMenuOpen ? 'bg-blue-500/30' : 'hover:bg-blue-500/20'}`}><Grid3X3 size={22} className="text-blue-500" /></button>
                             <div className="w-[1px] h-6 bg-white/10 mx-1" />
                             {windows.map(win => (
-                              <div key={win.id} onClick={() => { setWindows(windows.map(w => w.id === win.id ? { ...w, minimized: false } : w)); setActiveWindowId(win.id); }} className={`p-2.5 rounded-xl cursor-pointer relative transition-all duration-200 active:scale-90 ${activeWindowId === win.id ? 'bg-white/10' : 'hover:bg-white/5'}`}>
-                                  {win.icon}
-                                  <div className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full transition-all duration-300 ${win.minimized ? 'bg-white/30' : 'bg-blue-500'}`} />
-                              </div>
+                                <div key={win.id} onClick={() => { setWindows(windows.map(w => w.id === win.id ? { ...w, minimized: false } : w)); setActiveWindowId(win.id); }} className={`p-2.5 rounded-xl cursor-pointer relative transition-all duration-200 active:scale-90 ${activeWindowId === win.id ? 'bg-white/10' : 'hover:bg-white/5'}`}>
+                                    {win.icon}
+                                    <div className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full transition-all duration-300 ${win.minimized ? 'bg-white/30' : 'bg-blue-500'}`} />
+                                </div>
                             ))}
                             <div className="w-[1px] h-6 bg-white/10 mx-1" />
                             <div className="flex items-center gap-2 px-2 text-white/40"><Wifi size={14} /><Volume2 size={14} /><Battery size={14} /></div>
